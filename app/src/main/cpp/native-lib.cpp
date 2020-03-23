@@ -1,35 +1,13 @@
 #include <jni.h>
 #include <string>
 #include "opencv2/opencv.hpp"
+#include "CascadeDetectorAdapter.h"
 #include <android/native_window_jni.h>
 
 ANativeWindow *window = 0;
 using namespace cv;
 
 DetectionBasedTracker *tracker = 0;
-class CascadeDetectorAdapter: public DetectionBasedTracker::IDetector {
- public:
-  CascadeDetectorAdapter(cv::Ptr<cv::CascadeClassifier> detector) :
-          IDetector(),
-          Detector(detector) {
-  }
-  void detect(const cv::Mat &Image, std::vector<cv::Rect> &objects) {
-      Detector->detectMultiScale(Image,
-                                 objects,
-                                 scaleFactor,
-                                 minNeighbours,
-                                 0,
-                                 minObjSize,
-                                 maxObjSize);
-  }
-
-  virtual ~CascadeDetectorAdapter() {
-  }
-
- private:
-  CascadeDetectorAdapter();
-  cv::Ptr<cv::CascadeClassifier> Detector;
-};
 
 
 extern "C"
