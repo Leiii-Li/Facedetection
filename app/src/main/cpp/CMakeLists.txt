@@ -9,7 +9,7 @@ cmake_minimum_required(VERSION 3.4.1)
 include_directories(${CMAKE_SOURCE_DIR}/include)
 add_library(libopencv_java SHARED IMPORTED)
 set_target_properties(libopencv_java PROPERTIES IMPORTED_LOCATION
-        ${CMAKE_SOURCE_DIR}/jniLibs/${ANDROID_ABI}/libopencv_java4.so)
+        ${CMAKE_SOURCE_DIR}/libs/${ANDROID_ABI}/libopencv_java4.so)
 
 
 add_library( # Sets the name of the library.
@@ -41,6 +41,7 @@ find_library( # Sets the name of the path variable.
 target_link_libraries( # Specifies the target library.
                        native-lib
 
+                       libopencv_java
                        # Links the target library to the log library
                        # included in the NDK.
                        ${log-lib} )
