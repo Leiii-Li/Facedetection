@@ -17,10 +17,51 @@ android {
             }
         }
     }
+    signingConfigs {//签名配置
+        release {//发布版签名配置
+            storeFile file('../rk3399.keystore')//密钥文件路径
+            storePassword 'android'//密钥文件密码
+            keyAlias 'androiddebugkey'//key别名
+            keyPassword 'android'//key密码
+        }
+    }
     buildTypes {
+        debug {
+            minifyEnabled false
+            shrinkResources false
+//            zipAlignEnabled true
+            signingConfig signingConfigs.release//设置签名信息
+        }
+
         release {
             minifyEnabled false
-            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            shrinkResources false
+//            zipAlignEnabled true
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            signingConfig signingConfigs.release//设置签名信息
+        }
+
+        applicationVariants.all {
+            //判断是release还是debug版本
+            def buildType = it.buildType.name
+            //获取当前时间的"YYYY-MM-dd"格式。
+            def createTime = new Date().format("YYYY-MM-dd", TimeZone.getTimeZone("GMT+08:00"))
+            //只对Release包起作用，如果不是Release包则不变更输出路径，否则可能导致AS无法自动安装debug包。
+            if (buildType == "release") {
+                it.getPackageApplication().outputDirectory = new File(
+                        project.rootDir.absolutePath + "/app/release")
+            }
+            it.outputs.each {
+                //只对Release包起作用，如果不是Release包则不变更名称。
+                if (buildType == "release") {
+                    //此处的命名规则是：项目名_渠道名_构建类型_版本名_创建时间.apk
+                    def fileName = "Opencv_release_v${defaultConfig.versionName}_${createTime}.apk"
+                    //重新对apk命名。(适用于Gradle4.0以下版本)
+                    //it.outputFile = new File(it.outputFile.parent, fileName)
+                    //重新对apk命名。(适用于Gradle4.0（含）以上版本)
+                    it.outputFileName = fileName
+                }
+            }
         }
     }
     externalNativeBuild {
