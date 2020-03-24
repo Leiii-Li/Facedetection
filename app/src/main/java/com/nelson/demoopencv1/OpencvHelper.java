@@ -1,6 +1,8 @@
 package com.nelson.demoopencv1;
 
+import android.graphics.Bitmap;
 import android.view.Surface;
+import java.util.List;
 
 /**
  * <pre>
@@ -37,4 +39,11 @@ public class OpencvHelper {
      */
     public native void setSurface(Surface surface);
 
+    /**
+     * 设置人脸数据
+     * @param byteArray
+     * @param width
+     * @param height
+     */
+    public native void initFaceData(byte[] byteArray, int width, int height);
 }

@@ -1,5 +1,7 @@
 package com.nelson.demoopencv1;
 
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.hardware.Camera;
 import android.hardware.Camera.CameraInfo;
 import android.hardware.Camera.PreviewCallback;
@@ -12,6 +14,7 @@ import android.os.Bundle;
 import com.nelson.demoopencv1.helper.CameraHelper;
 import com.nelson.demoopencv1.helper.Utils;
 import java.io.File;
+import java.nio.ByteBuffer;
 
 public class MainActivity extends AppCompatActivity implements Callback, PreviewCallback {
 
@@ -31,6 +34,19 @@ public class MainActivity extends AppCompatActivity implements Callback, Preview
         mCameraHelper.setPreviewCallback(this);
 
         Utils.copyAssets(this, "lbpcascade_frontalface.xml");
+
+        initFaceData();
+    }
+
+    private void initFaceData() {
+        Bitmap bitmap = BitmapFactory.decodeResource(getResources(), R.drawable.face);
+        int bytes = bitmap.getByteCount();
+
+        ByteBuffer buf = ByteBuffer.allocate(bytes);
+        bitmap.copyPixelsToBuffer(buf);
+
+        byte[] byteArray = buf.array();
+        mOpencvHelper.initFaceData(byteArray,bitmap.getWidth(),bitmap.getHeight());
     }
 
     @Override

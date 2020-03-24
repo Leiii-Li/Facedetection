@@ -2,12 +2,14 @@
 #include <string>
 #include "opencv2/opencv.hpp"
 #include "CascadeDetectorAdapter.h"
+#include "FaceRepository.h"
+#include "FaceCompileHelper.h"
 #include <android/native_window_jni.h>
 
 ANativeWindow *window = 0;
-
 cv::DetectionBasedTracker *tracker = 0;
-
+FaceRepository *mFaceRepository = new FaceRepository();
+std::vector<cv::Rect> processFaceRect(const cv::Mat gray);
 
 extern "C"
 JNIEXPORT void JNICALL
@@ -17,11 +19,13 @@ Java_com_nelson_demoopencv1_OpencvHelper_init(JNIEnv *env, jobject instance, jst
 
     //创建检测器  Ptr是智能指针，不需要关心释放
     cv::Ptr<cv::CascadeClassifier> mainClassifier = cv::makePtr<cv::CascadeClassifier>(path);
-    cv::Ptr<CascadeDetectorAdapter> mainDetector = cv::makePtr<CascadeDetectorAdapter>(mainClassifier);
+    cv::Ptr<CascadeDetectorAdapter>
+            mainDetector = cv::makePtr<CascadeDetectorAdapter>(mainClassifier);
 
     //创建跟踪器
     cv::Ptr<cv::CascadeClassifier> trackClassifier = cv::makePtr<cv::CascadeClassifier>(path);
-    cv::Ptr<CascadeDetectorAdapter> trackingDetector = cv::makePtr<CascadeDetectorAdapter>(trackClassifier);
+    cv::Ptr<CascadeDetectorAdapter>
+            trackingDetector = cv::makePtr<CascadeDetectorAdapter>(trackClassifier);
 
     //开始识别，结果在CascadeDetectorAdapter中返回
     cv::DetectionBasedTracker::Parameters DetectorParams;
@@ -49,11 +53,8 @@ Java_com_nelson_demoopencv1_OpencvHelper_postData(JNIEnv *env, jobject instance,
     //二值化
     equalizeHist(gray, gray);
 
-    std::vector<cv::Rect> faces;
-    //检测图片
-    tracker->process(gray);
-    //获取CascadeDetectorAdapter中的检测结果
-    tracker->getObjects(faces);
+    std::vector<cv::Rect> faces = processFaceRect(gray);
+
     //画出矩形
     for (cv::Rect face : faces) {
         rectangle(src, face, cv::Scalar(255, 0, 0));
@@ -90,6 +91,14 @@ Java_com_nelson_demoopencv1_OpencvHelper_postData(JNIEnv *env, jobject instance,
     env->ReleaseByteArrayElements(data_, data, 0);
 }
 
+std::vector<cv::Rect> processFaceRect(cv::Mat gray) {
+    std::vector<cv::Rect> faces;
+    //检测图片
+    tracker->process(gray);
+    //获取CascadeDetectorAdapter中的检测结果
+    tracker->getObjects(faces);
+    return faces;
+}
 
 extern "C"
 JNIEXPORT void JNICALL
@@ -103,4 +112,12 @@ Java_com_nelson_demoopencv1_OpencvHelper_setSurface(JNIEnv *env,
     }
     window = ANativeWindow_fromSurface(env, surface);
 
+}extern "C"
+JNIEXPORT void JNICALL
+Java_com_nelson_demoopencv1_OpencvHelper_initFaceData(JNIEnv *env,
+                                                      jobject thiz,
+                                                      jbyteArray data,
+                                                      jint width,
+                                                      jint height) {
+    mFaceRepository->putFaceData(env, data, width, height);
 }
